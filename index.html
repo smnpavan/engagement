@@ -118,13 +118,13 @@ footer{position:relative;z-index:2;text-align:center;padding:30px 0 0}footer .sh
   <svg viewBox="0 0 300 34" class="lotus" aria-hidden="true"><path d="M8 18H122M178 18H292" stroke="#a97c2f" stroke-width="1.2"/><circle cx="130" cy="18" r="2.4" fill="#a97c2f"/><circle cx="170" cy="18" r="2.4" fill="#a97c2f"/><path d="M150 3q-10 9 0 24q10-15 0-24z" fill="#e58aa5"/><path d="M150 28q-20 2-27-11q13 2 27 11zM150 28q20 2 27-11q-13 2-27 11z" fill="#f2a9bf"/></svg>
   <p class="nmS" data-i18n="bn"></p><div class="amp">&amp;</div><p class="nmS" data-i18n="pn"></p>
   <p class="serif" style="font-size:20px;margin:14px 0 0" id="hd"></p><div class="cd" id="cd"></div>
-  <div class="btns"><a class="btn" id="dir0" target="_blank" rel="noopener" data-i18n="dir"></a></div></div></div></header>
+  </div></div></header>
 
 
 <section id="events"><h2 class="rv" data-i18n="evH"></h2><div class="div"></div><div class="grid" id="evgrid"></div></section>
 
 <section id="wishes"><h2 class="rv" data-i18n="wH"></h2><p class="sub" data-i18n="wS"></p>
- <form id="wf" novalidate><input class="hp" name="website" tabindex="-1" autocomplete="off">
+ <form id="wf" novalidate><input class="hp" name="hp_x7" tabindex="-1" autocomplete="off">
   <div><label data-i18n="yn"></label><input name="name" maxlength="60"></div>
   <div><label data-i18n="ym"></label><textarea name="msg" rows="3" maxlength="400"></textarea></div>
   <div class="err" id="we"></div><button class="btn" type="submit" data-i18n="wsend"></button></form>
@@ -168,7 +168,7 @@ function applyLang(l){lang=L[l]?l:"en";ls.set("lang",lang);document.documentElem
  $("#addr").textContent=t("addr");$("#vnm").textContent=t("vname");$("#vn").textContent=t("vname");$("#va").textContent=t("addr");
  $("#hint").textContent=t(hs);renderEvents();tick();drawWishes();renderFacts()}
 $("#lg").onclick=e=>{const b=e.target.closest("button");if(b)applyLang(b.dataset.l)};setInterval(tick,1e3);
-$("#dir").href=CFG.maps;$("#dir0").href=CFG.maps;$("#dir1").href=CFG.maps;
+$("#dir").href=CFG.maps;$("#dir1").href=CFG.maps;
 document.querySelectorAll(".fact").forEach(b=>b.onclick=()=>{b.dataset.o=b.dataset.o==="1"?"0":"1";renderFacts()});
 $("#music").onclick=()=>{const a=$("#au");if(a.paused){a.play().catch(()=>{});$("#music").textContent="❚❚"}else{a.pause();$("#music").textContent="♪"}};
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
@@ -205,11 +205,12 @@ $("#open").onclick=closeEnv;$("#skip").onclick=closeEnv;
 // ===== blessings stored in Supabase =====
 Object.assign(L.en,{nc2:"Blessings are not available right now. Please try again later."});
 Object.assign(L.kn,{nc2:"ಆಶೀರ್ವಾದ ಕಳುಹಿಸುವ ಸೌಲಭ್ಯ ಈಗ ಲಭ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಪ್ರಯತ್ನಿಸಿ."});
+Object.assign(L.en,{w1a:"Please enter your name.",w1b:"Please write your blessing."});Object.assign(L.kn,{w1a:"ದಯವಿಟ್ಟು ನಿಮ್ಮ ಹೆಸರನ್ನು ನಮೂದಿಸಿ.",w1b:"ದಯವಿಟ್ಟು ನಿಮ್ಮ ಆಶೀರ್ವಾದ ಸಂದೇಶವನ್ನು ಬರೆಯಿರಿ."});
 const SB=window.SB_CONFIG||{},SBH={apikey:SB.key||"","Content-Type":"application/json"};let lastSig="";
 async function loadWishes(){if(!SB.url||!SB.key)return;try{const r=await fetch(SB.url+"/rest/v1/wishes?select=id,name,message,created_at&status=eq.approved&order=created_at.desc&limit=100",{headers:SBH});if(!r.ok)return;const d=await r.json(),sig=d.map(w=>w.id).join();
  if(sig!==lastSig){lastSig=sig;wishes=d.map(w=>({id:w.id,name:w.name,msg:w.message,status:"approved",at:Date.parse(w.created_at)}));drawWishes()}}catch(e){}}
-$("#wf").onsubmit=async e=>{e.preventDefault();const f=e.target,err=$("#we");err.textContent="";const name=f.name.value.trim(),msg=f.msg.value.trim();
- if(f.website.value)return;if(!name||msg.length<5){err.textContent=t("w1");return}
+$("#wf").onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,err=$("#we");err.textContent="";const fd=new FormData(f),name=String(fd.get("name")||"").trim(),msg=String(fd.get("msg")||"").trim();
+ if(fd.get("hp_x7"))return;if(!name){err.textContent=t("w1a");return}if(msg.length<2){err.textContent=t("w1b");return}
  if(Date.now()-(+ls.get("wish-t")||0)<30000){err.textContent=t("w2");return}
  if(!SB.url||!SB.key){err.textContent=t("nc2");return}
  try{const r=await fetch(SB.url+"/rest/v1/wishes",{method:"POST",headers:{...SBH,Prefer:"return=minimal"},body:JSON.stringify({name,message:msg,status:"pending"})});if(!r.ok)throw 0;ls.set("wish-t",Date.now());f.reset();$("#wok").style.display="block"}catch(x){err.textContent=t("sv")}};
